@@ -45,6 +45,7 @@ public class DoctorSlot {
     private SlotStatus status;
 
     private String reservedByPatientId;
+    private UUID reservedForAppointmentId;
 
     private LocalDateTime reservedUntil;
 

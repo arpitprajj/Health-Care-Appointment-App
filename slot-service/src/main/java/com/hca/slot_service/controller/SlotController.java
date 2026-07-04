@@ -22,7 +22,12 @@ public class SlotController {
     @Autowired
     private final SlotService slotService;
 
-    @GetMapping("/{doctorId}")
+    @GetMapping("/{slotId}")
+    public ResponseEntity<SlotResponse>getSlots(@PathVariable UUID slotId){
+        return ResponseEntity.ok(slotService.getSlot(slotId));
+    }
+
+    @GetMapping("/doctor/{doctorId}")
     public ResponseEntity<List<DoctorSlot>>getByDoctorIdAndDate(@PathVariable String doctorId, @RequestParam LocalDate date){
         List<DoctorSlot>slotList=slotService.findByDoctorIdAndSlotDate(doctorId, date);
         return ResponseEntity.ok(slotList);
@@ -46,19 +51,26 @@ public class SlotController {
     @PatchMapping("/{slotId}/reserve")
     public ResponseEntity<SlotResponse> reserveSlot(
             @PathVariable UUID slotId,
-            @RequestParam String patientId) {
+            @RequestParam String patientId,
+             @RequestParam UUID appointmentId) {
 
         return ResponseEntity.ok(
                 slotService.reserveSlot(
                         slotId,
-                        patientId));
+                        patientId,appointmentId));
     }
 
     @PatchMapping("/{slotId}/book")
     public ResponseEntity<SlotResponse> bookSlot(
-            @PathVariable UUID slotId) {
+            @PathVariable UUID slotId,
+            @RequestParam UUID appointmentId) {
 
         return ResponseEntity.ok(
-                slotService.bookSlot(slotId));
+                slotService.bookSlot(slotId,appointmentId));
     }
+    @PatchMapping("{slotId}/release")
+    public ResponseEntity<SlotResponse>releaseSlot(@PathVariable UUID slotId,@RequestParam UUID appointmentId){
+        return ResponseEntity.ok(slotService.releaseSlot(slotId,appointmentId));
+    }
+
 }

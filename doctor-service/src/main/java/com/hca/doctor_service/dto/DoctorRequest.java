@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class DoctorRequest {
-
+    private String userId;
     private String fullName;
 
     private String email;

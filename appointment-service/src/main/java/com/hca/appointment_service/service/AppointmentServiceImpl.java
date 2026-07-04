@@ -1,0 +1,227 @@
+package com.hca.appointment_service.service;
+
+import com.hca.appointment_service.dto.AppointmentMapper;
+import com.hca.appointment_service.dto.AppointmentResponse;
+import com.hca.appointment_service.dto.PatientResponse;
+import com.hca.appointment_service.dto.SlotResponse;
+import com.hca.appointment_service.entity.Appointment;
+import com.hca.appointment_service.enums.AppointmentStatus;
+import com.hca.appointment_service.enums.PaymentStatus;
+import com.hca.appointment_service.enums.Role;
+import com.hca.appointment_service.enums.SlotStatus;
+import com.hca.appointment_service.exceptions.AppointmentNotFoundException;
+import com.hca.appointment_service.feign.PatientClient;
+import com.hca.appointment_service.feign.SlotClient;
+import com.hca.appointment_service.repository.AppointmentRepository;
+import feign.FeignException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class AppointmentServiceImpl implements AppointmentService{
+    private final PatientClient patientClient;
+    private final SlotClient slotClient;
+    private final AppointmentRepository repository;
+
+
+    @Override
+    @Transactional
+    public AppointmentResponse createAppointment(
+            String userId,
+            String role,
+            String slotId) {
+
+        if (!Role.PATIENT.name().equals(role)) {
+            throw new RuntimeException(
+                    "Only patients can book appointments");
+        }
+
+        PatientResponse patient =
+                patientClient.getPatientByUserId(userId);
+
+        SlotResponse slot =
+                slotClient.getSlot(
+                        UUID.fromString(slotId));
+
+        // Optional but recommended
+       // doctorClient.getDoctor(slot.getDoctorId());
+
+        if (slot.getStatus() != SlotStatus.AVAILABLE) {
+            throw new RuntimeException(
+                    "Selected slot is not available");
+        }
+
+        Appointment appointment =
+                Appointment.builder()
+                        .patientId(
+                                patient.getPatientId().toString())
+                        .doctorId(slot.getDoctorId())
+                        .slotId(slot.getId())
+                        .consultationFee(BigDecimal.valueOf(500.0))
+                        .appointmentStatus(
+                                AppointmentStatus.PENDING_PAYMENT)
+                        .paymentStatus(
+                                PaymentStatus.PENDING)
+                        .appointmentTime(
+                                LocalDateTime.of(
+                                        slot.getSlotDate(),
+                                        slot.getStartTime()))
+                        .meetingLink(null)
+                        .notes(null)
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
+                        .build();
+
+        appointment = repository.save(appointment);
+
+        try {
+
+            slotClient.reserveSlot(
+                    appointment.getSlotId(),
+                    appointment.getPatientId(),
+                    appointment.getAppointmentId());
+
+        } catch (FeignException ex) {
+
+            appointment.setAppointmentStatus(
+                    AppointmentStatus.CANCELLED);
+
+            appointment.setPaymentStatus(
+                    PaymentStatus.FAILED);
+
+            appointment.setUpdatedAt(
+                    LocalDateTime.now());
+
+            repository.save(appointment);
+
+            throw new RuntimeException(
+                    "Unable to reserve slot",
+                    ex);
+        }
+
+        return AppointmentMapper.toDto(appointment);
+    }
+    @Override
+    @Transactional
+    public AppointmentResponse confirmAppointment(UUID appointmentId) {
+
+        Appointment appointment = repository.findById(appointmentId)
+                .orElseThrow(() ->
+                        new AppointmentNotFoundException(
+                                "Appointment not found"));
+
+        if (appointment.getAppointmentStatus() == AppointmentStatus.CONFIRMED) {
+            return AppointmentMapper.toDto(appointment);
+        }
+        try {
+            slotClient.bookSlot(
+                    appointment.getSlotId(),
+                    appointment.getAppointmentId());
+
+            appointment.setAppointmentStatus(
+                    AppointmentStatus.CONFIRMED);
+
+            appointment.setPaymentStatus(
+                    PaymentStatus.SUCCESS);
+
+            appointment.setUpdatedAt(LocalDateTime.now());
+
+            // TODO
+            // Generate Google Meet/Zoom link here
+
+            appointment.setMeetingLink(
+                    "https://meet.google.com/abc-defg-hij");
+
+            appointment.setNotes(
+                    "Appointment confirmed successfully.");
+
+            repository.save(appointment);
+            return AppointmentMapper.toDto(appointment);
+        }
+        catch (FeignException ex) {
+
+            // Compensation
+
+            appointment.setAppointmentStatus(
+                    AppointmentStatus.CANCELLED);
+
+            appointment.setPaymentStatus(
+                    PaymentStatus.FAILED);
+
+            repository.save(appointment);
+
+            throw new RuntimeException(
+                    "Unable to book slot after payment", ex);
+        }
+
+    }
+
+    @Override
+    @Transactional
+    public AppointmentResponse cancelAppointment(UUID appointmentId) {
+
+        Appointment appointment = repository.findById(appointmentId)
+                .orElseThrow(() ->
+                        new AppointmentNotFoundException(
+                                "Appointment not found"));
+
+        if (appointment.getAppointmentStatus() == AppointmentStatus.CANCELLED) {
+            return AppointmentMapper.toDto(appointment);
+        }
+
+        if (appointment.getAppointmentStatus() == AppointmentStatus.CONFIRMED) {
+
+            // Later:
+            // initiate refund
+
+        } else {
+
+            slotClient.releaseSlot(
+                    appointment.getSlotId(),
+                    appointment.getAppointmentId());
+        }
+
+        appointment.setAppointmentStatus(
+                AppointmentStatus.CANCELLED);
+
+        appointment.setPaymentStatus(
+                PaymentStatus.FAILED);
+
+        appointment.setUpdatedAt(LocalDateTime.now());
+
+        repository.save(appointment);
+
+        return AppointmentMapper.toDto(appointment);
+    }
+
+    @Override
+    public AppointmentResponse getAppointment(UUID appointmentId) {
+
+        Appointment appointment = repository.findById(appointmentId)
+                .orElseThrow(() ->
+                        new AppointmentNotFoundException(
+                                "Appointment not found"));
+
+        return AppointmentMapper.toDto(appointment);
+    }
+
+    @Override
+    public List<AppointmentResponse> getPatientAppointments(String patientId) {
+        List<Appointment> appointments=repository.findByPatientId(patientId);
+        return appointments.stream().map((appointment)->AppointmentMapper.toDto(appointment)).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AppointmentResponse> getDoctorAppointments(String doctorId) {
+        List<Appointment>appointments=repository.findByPatientId(doctorId);
+        return appointments.stream().map((appointment)->AppointmentMapper.toDto(appointment)).collect(Collectors.toList());
+    }
+}

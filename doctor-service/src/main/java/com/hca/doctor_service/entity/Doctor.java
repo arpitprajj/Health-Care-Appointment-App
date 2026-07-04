@@ -16,9 +16,9 @@ import java.time.LocalDateTime;
 public class Doctor {
 
     @Id
-    private String id;
-
     private String doctorId;
+
+    private String userId;
 
     private String fullName;
 

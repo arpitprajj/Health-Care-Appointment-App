@@ -54,6 +54,12 @@ public class SlotServiceImpl implements SlotService {
     }
 
     @Override
+    public SlotResponse getSlot(UUID slotId) {
+        DoctorSlot slot=repository.findById(slotId).orElseThrow(()->new SlotNotFoundException("NOT SUCH SLOT FOUND "+slotId));
+        return mapper.map(slot);
+    }
+
+    @Override
     public List<SlotResponse> getAvailableSlots(String doctorId, LocalDate date) {
         return List.of();
     }
@@ -62,7 +68,7 @@ public class SlotServiceImpl implements SlotService {
     @Transactional
     public SlotResponse reserveSlot(
             UUID slotId,
-            String patientId) {
+            String patientId,UUID appointmentId) {
 
         DoctorSlot slot =
                 repository.findByIdForUpdate(slotId)
@@ -79,7 +85,7 @@ public class SlotServiceImpl implements SlotService {
         slot.setReservedByPatientId(patientId);
         slot.setReservedUntil(
                 LocalDateTime.now().plusMinutes(5));
-
+        slot.setReservedForAppointmentId(appointmentId);
         repository.save(slot);
 
         return mapper.map(slot);
@@ -87,13 +93,18 @@ public class SlotServiceImpl implements SlotService {
 
     @Override
     @Transactional
-    public SlotResponse bookSlot(UUID slotId) {
+    public SlotResponse bookSlot(UUID slotId,UUID appointmentId) {
 
         DoctorSlot slot =
                 repository.findByIdForUpdate(slotId)
                         .orElseThrow(
                                 () -> new SlotNotFoundException(
                                         "Slot not found"));
+        if (!appointmentId.equals(slot.getReservedForAppointmentId())) {
+
+            throw new RuntimeException(
+                    "Reservation does not belong to this appointment");
+        }
 
         if (slot.getStatus() != SlotStatus.RESERVED) {
             throw new RuntimeException(
@@ -104,6 +115,25 @@ public class SlotServiceImpl implements SlotService {
 
         repository.save(slot);
 
+        return mapper.map(slot);
+    }
+
+    @Override
+    @Transactional
+    public SlotResponse releaseSlot(UUID slotId,UUID appointmentId) {
+        DoctorSlot slot=repository.findByIdForUpdate(slotId).orElseThrow(()->new SlotNotFoundException("slot not found"));
+        if (!appointmentId.equals(slot.getReservedForAppointmentId())) {
+
+            throw new RuntimeException(
+                    "Reservation does not belong to this appointment");
+        }
+        slot.setStatus(SlotStatus.AVAILABLE);
+
+        slot.setReservedByPatientId(null);
+
+        slot.setReservedUntil(null);
+        slot.setReservedForAppointmentId(null);
+        repository.save(slot);
         return mapper.map(slot);
     }
 

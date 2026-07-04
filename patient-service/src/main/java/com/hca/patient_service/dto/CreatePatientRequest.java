@@ -16,7 +16,7 @@ public class CreatePatientRequest {
     @NotBlank
     private String userId;
 
-    @NotBlank
+
     private String fullName;
 
     @Email

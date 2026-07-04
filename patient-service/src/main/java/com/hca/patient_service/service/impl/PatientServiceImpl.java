@@ -9,6 +9,7 @@ import com.hca.patient_service.entity.Patient;
 import com.hca.patient_service.exception.PatientNotFoundException;
 import com.hca.patient_service.repository.PatientRepository;
 import com.hca.patient_service.service.PatientService;
+import com.hca.patient_service.utility.ProfileStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,7 @@ public class PatientServiceImpl implements PatientService {
                 .gender(request.getGender())
                 .bloodGroup(request.getBloodGroup())
                 .address(request.getAddress())
+                .profileStatus(ProfileStatus.PENDING)
                 .emergencyContactName(
                         request.getEmergencyContactName())
                 .emergencyContactNumber(
@@ -112,6 +114,7 @@ public class PatientServiceImpl implements PatientService {
                 request.getEmergencyContactName());
         patient.setEmergencyContactNumber(
                 request.getEmergencyContactNumber());
+        patient.setProfileStatus(ProfileStatus.COMPLETED);
 
         patient.setUpdatedAt(
                 LocalDateTime.now());

@@ -139,7 +139,7 @@ public class DoctorServiceImpl implements DoctorService {
             Doctor doctor) {
 
         return DoctorResponse.builder()
-                .doctorId(doctor.getId())
+                .doctorId(doctor.getDoctorId())
                 .fullName(doctor.getFullName())
                 .email(doctor.getEmail())
                 .phoneNumber(doctor.getPhoneNumber())

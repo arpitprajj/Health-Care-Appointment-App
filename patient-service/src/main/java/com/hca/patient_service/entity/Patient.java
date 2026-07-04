@@ -2,6 +2,7 @@ package com.hca.patient_service.entity;
 
 import com.hca.patient_service.utility.BloodGroup;
 import com.hca.patient_service.utility.Gender;
+import com.hca.patient_service.utility.ProfileStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,6 +39,9 @@ public class Patient {
 
     @Enumerated(EnumType.STRING)
     private BloodGroup bloodGroup;
+
+    @Enumerated(EnumType.STRING)
+    private ProfileStatus profileStatus;
 
     private String address;
 

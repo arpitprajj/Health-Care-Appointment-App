@@ -15,6 +15,7 @@ public interface SlotService {
 
     void generateSlots(
             GenerateSlotsRequest request);
+    SlotResponse getSlot(UUID slotId);
 
     List<SlotResponse> getAvailableSlots(
             String doctorId,
@@ -22,10 +23,11 @@ public interface SlotService {
 
     SlotResponse reserveSlot(
             UUID slotId,
-            String patientId);
+            String patientId,UUID appointmentId);
 
     SlotResponse bookSlot(
-            UUID slotId);
+            UUID slotId,UUID appointmentId);
+    SlotResponse releaseSlot(UUID slotId,UUID appointmentSlot);
     List<DoctorSlot> findByDoctorIdAndSlotDate(
             String doctorId,
             LocalDate slotDate);
