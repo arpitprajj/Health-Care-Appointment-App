@@ -15,6 +15,7 @@
         <module name="patient-service" />
         <module name="slot-service" />
         <module name="service-registry" />
+        <module name="notification-service" />
       </profile>
     </annotationProcessing>
   </component>
@@ -24,6 +25,7 @@
       <module name="appointment-service" options="-parameters" />
       <module name="auth-service" options="-parameters" />
       <module name="doctor-service" options="-parameters" />
+      <module name="notification-service" options="-parameters" />
       <module name="patient-service" options="-parameters" />
       <module name="payment-service" options="-parameters" />
       <module name="service-registry" options="-parameters" />

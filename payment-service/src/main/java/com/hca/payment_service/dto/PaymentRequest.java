@@ -11,8 +11,6 @@ public class PaymentRequest {
 
     private UUID appointmentId;
 
-    private BigDecimal amount;
-
     private PaymentMethod paymentMethod;
 
 }

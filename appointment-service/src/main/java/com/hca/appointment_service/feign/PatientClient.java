@@ -5,11 +5,16 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.util.UUID;
+
 @FeignClient(name = "PATIENT-SERVICE")
 public interface PatientClient {
 
     @GetMapping("/api/patients/user/{userId}")
     PatientResponse getPatientByUserId(
             @PathVariable String userId);
+
+    @GetMapping("api/patients/{patientId}")
+    PatientResponse getPatientById(@PathVariable UUID patientId);
 
 }

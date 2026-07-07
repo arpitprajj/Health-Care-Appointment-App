@@ -46,6 +46,13 @@ spring:
           filters:
             - JwtAuthenticationFilter
 
+        - id: payment-service
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/appointments/**
+          filters:
+            - JwtAuthenticationFilter
+
 logging:
   level:
     org.springframework.cloud.gateway: TRACE

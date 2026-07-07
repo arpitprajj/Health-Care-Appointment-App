@@ -14,6 +14,7 @@ public class AppointmentMapper {
         dto.setPatientId(appointment.getPatientId());
         dto.setDoctorId(appointment.getDoctorId());
         dto.setSlotId(appointment.getSlotId());
+        dto.setConsultationFee(appointment.getConsultationFee());
         dto.setAppointmentStatus(appointment.getAppointmentStatus());
         dto.setPaymentStatus(appointment.getPaymentStatus());
         dto.setMeetingLink(appointment.getMeetingLink());

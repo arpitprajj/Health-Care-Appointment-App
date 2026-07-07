@@ -1,20 +1,19 @@
 package com.hca.appointment_service.service;
 
-import com.hca.appointment_service.dto.AppointmentMapper;
-import com.hca.appointment_service.dto.AppointmentResponse;
-import com.hca.appointment_service.dto.PatientResponse;
-import com.hca.appointment_service.dto.SlotResponse;
+import com.hca.appointment_service.dto.*;
 import com.hca.appointment_service.entity.Appointment;
-import com.hca.appointment_service.enums.AppointmentStatus;
-import com.hca.appointment_service.enums.PaymentStatus;
-import com.hca.appointment_service.enums.Role;
-import com.hca.appointment_service.enums.SlotStatus;
+import com.hca.appointment_service.enums.*;
+import com.hca.appointment_service.events.AppointmentConfirmedEvent;
+import com.hca.appointment_service.events.AppointmentReservedEvent;
 import com.hca.appointment_service.exceptions.AppointmentNotFoundException;
+import com.hca.appointment_service.feign.DoctorClient;
 import com.hca.appointment_service.feign.PatientClient;
 import com.hca.appointment_service.feign.SlotClient;
+import com.hca.appointment_service.producer.AppointmentEventProducer;
 import com.hca.appointment_service.repository.AppointmentRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,10 +25,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AppointmentServiceImpl implements AppointmentService{
     private final PatientClient patientClient;
     private final SlotClient slotClient;
+    private final DoctorClient doctorClient;
     private final AppointmentRepository repository;
+    private final AppointmentEventProducer producer;
 
 
     @Override
@@ -52,7 +54,7 @@ public class AppointmentServiceImpl implements AppointmentService{
                         UUID.fromString(slotId));
 
         // Optional but recommended
-       // doctorClient.getDoctor(slot.getDoctorId());
+       //
 
         if (slot.getStatus() != SlotStatus.AVAILABLE) {
             throw new RuntimeException(
@@ -106,6 +108,38 @@ public class AppointmentServiceImpl implements AppointmentService{
                     "Unable to reserve slot",
                     ex);
         }
+        producer.publishReserved(
+
+                AppointmentReservedEvent.builder()
+
+                        .appointmentId(
+                                appointment.getAppointmentId())
+
+                        .patientId(
+                                appointment.getPatientId())
+
+                        .patientEmail(
+                                patient.getEmail())
+
+                        .patientName(
+                                patient.getFullName())
+
+                        .doctorId(
+                                appointment.getDoctorId())
+
+                        .consultationFee(
+                                appointment.getConsultationFee())
+
+                        .appointmentTime(
+                                appointment.getAppointmentTime())
+
+                        .eventType(
+                                EventType.APPOINTMENT_RESERVED)
+
+                        .build()
+
+        );
+        log.info("Appointment Reserved"+appointment.getAppointmentId());
 
         return AppointmentMapper.toDto(appointment);
     }
@@ -144,6 +178,47 @@ public class AppointmentServiceImpl implements AppointmentService{
                     "Appointment confirmed successfully.");
 
             repository.save(appointment);
+            try {
+                DoctorResponse doctor = doctorClient.getDoctor(appointment.getDoctorId());
+                PatientResponse patient = patientClient.getPatientById(UUID.fromString(appointment.getPatientId()));
+                producer.publishConfirmed(
+
+                        AppointmentConfirmedEvent.builder()
+
+                                .appointmentId(
+                                        appointment.getAppointmentId())
+
+                                .patientId(
+                                        appointment.getPatientId())
+
+                                .patientEmail(
+                                        patient.getEmail())
+
+                                .patientName(
+                                        patient.getFullName())
+
+                                .doctorId(
+                                        appointment.getDoctorId())
+
+                                .doctorEmail(
+                                        doctor.getEmail())
+
+                                .doctorName(
+                                        doctor.getFullName())
+
+                                .appointmentTime(
+                                        appointment.getAppointmentTime())
+
+                                .eventType(
+                                        EventType.APPOINTMENT_CONFIRMED)
+
+                                .build()
+
+                );
+                log.info("Appointment Confirmed "+appointment.getAppointmentId());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             return AppointmentMapper.toDto(appointment);
         }
         catch (FeignException ex) {
