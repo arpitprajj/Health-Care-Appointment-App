@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,17 +25,19 @@ public class DoctorServiceImpl implements DoctorService {
     public DoctorResponse createDoctor(DoctorRequest request) {
 
         Doctor doctor = Doctor.builder()
+                .doctorId(UUID.randomUUID().toString())
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .phoneNumber(request.getPhoneNumber())
+                .userId(request.getUserId())
                 .specialization(request.getSpecialization())
                 .qualification(request.getQualification())
                 .experienceYears(request.getExperienceYears())
                 .hospitalName(request.getHospitalName())
                 .city(request.getCity())
                 .consultationFee(request.getConsultationFee())
-                .averageRating(4.0)
-                .totalReviews(100)
+                .averageRating(0.0)
+                .totalReviews(0)
                 .active(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -44,6 +47,7 @@ public class DoctorServiceImpl implements DoctorService {
 
         return mapToResponse(savedDoctor);
     }
+
 
     @Override
     public DoctorResponse getDoctorById(String doctorId) {

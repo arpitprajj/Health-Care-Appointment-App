@@ -139,7 +139,7 @@ public class AppointmentServiceImpl implements AppointmentService{
                         .build()
 
         );
-        log.info("Appointment Reserved"+appointment.getAppointmentId());
+        log.info("======================================Appointment Reserved"+appointment.getAppointmentId());
 
         return AppointmentMapper.toDto(appointment);
     }
@@ -215,7 +215,7 @@ public class AppointmentServiceImpl implements AppointmentService{
                                 .build()
 
                 );
-                log.info("Appointment Confirmed "+appointment.getAppointmentId());
+                log.info("====================================Appointment Confirmed "+appointment.getAppointmentId());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

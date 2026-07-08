@@ -1,5 +1,7 @@
 package com.hca.notification_service.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hca.notification_service.dto.AppointmentConfirmedEvent;
 import com.hca.notification_service.dto.AppointmentReservedEvent;
 import com.hca.notification_service.service.NotificationService;
@@ -14,14 +16,15 @@ import org.springframework.stereotype.Component;
 public class AppointmentEventConsumer {
 
     private final NotificationService notificationService;
+    private final ObjectMapper objectMapper;
 
     @KafkaListener(
             topics = "appointment-reserved",
             groupId = "notification-group")
     public void consumeReserved(
-            AppointmentReservedEvent event) {
-
-        log.info("Reserved Event Received");
+            String json) throws JsonProcessingException {
+        AppointmentReservedEvent event=objectMapper.readValue(json, AppointmentReservedEvent.class);
+        log.info("==========================Reserved Event Received=============================================");
 
         notificationService.handleReservedAppointment(event);
     }
@@ -30,9 +33,9 @@ public class AppointmentEventConsumer {
             topics = "appointment-confirmed",
             groupId = "notification-group")
     public void consumeConfirmed(
-            AppointmentConfirmedEvent event) {
-
-        log.info("Confirmed Event Received");
+            String json) throws JsonProcessingException {
+        AppointmentConfirmedEvent event=objectMapper.readValue(json, AppointmentConfirmedEvent.class);
+        log.info("=====================Confirmed Event Received=================");
 
         notificationService.handleConfirmedAppointment(event);
     }

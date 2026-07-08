@@ -6,6 +6,8 @@ import com.hca.notification_service.entity.Notification;
 import com.hca.notification_service.enums.EventType;
 import com.hca.notification_service.enums.NotificationStatus;
 import com.hca.notification_service.repository.NotificationRepository;
+import com.hca.notification_service.service.EmailService;
+import com.hca.notification_service.service.EmailTemplateService;
 import com.hca.notification_service.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,12 +22,14 @@ public class NotificationServiceImpl
         implements NotificationService {
 
     private final NotificationRepository repository;
+    private final EmailTemplateService templateService;
+    private final EmailService emailService;
 
     @Override
     public void handleReservedAppointment(
             AppointmentReservedEvent event) {
 
-        log.info("Appointment Reserved Event Received : {}",
+        log.info("====================================Appointment Reserved Event Received : {}",
                 event.getAppointmentId());
 
         Notification notification =
@@ -40,6 +44,17 @@ public class NotificationServiceImpl
                         .createdAt(LocalDateTime.now())
                         .build();
 
+        String subject =
+                templateService.getReservationSubject();
+
+        String body =
+                templateService.buildReservationEmail(event);
+
+        emailService.sendEmail(
+                event.getPatientEmail(),
+                subject,
+                body);
+
         repository.save(notification);
     }
 
@@ -47,7 +62,7 @@ public class NotificationServiceImpl
     public void handleConfirmedAppointment(
             AppointmentConfirmedEvent event) {
 
-        log.info("Appointment Confirmed Event Received : {}",
+        log.info("=====================================Appointment Confirmed Event Received : {}",
                 event.getAppointmentId());
 
         Notification notification =
@@ -61,6 +76,17 @@ public class NotificationServiceImpl
                         .notificationStatus(NotificationStatus.PENDING)
                         .createdAt(LocalDateTime.now())
                         .build();
+
+        String subject =
+                templateService.getConfirmationSubject();
+
+        String body =
+                templateService.buildConfirmationEmail(event);
+
+        emailService.sendEmail(
+                event.getPatientEmail(),
+                subject,
+                body);
 
         repository.save(notification);
     }
