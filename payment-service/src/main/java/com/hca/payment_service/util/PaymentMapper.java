@@ -16,7 +16,7 @@ public class PaymentMapper {
         response.setAmount(payment.getAmount());
         response.setPaymentMethod(payment.getPaymentMethod());
         response.setPaymentStatus(payment.getPaymentStatus());
-        response.setTransactionId(payment.getTransactionId());
+        response.setRazorpayOrderId(payment.getRazorpayOrderId());
 
         return response;
     }

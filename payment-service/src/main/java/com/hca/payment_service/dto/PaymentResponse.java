@@ -26,5 +26,5 @@ public class PaymentResponse {
 
     private PaymentStatus paymentStatus;
 
-    private String transactionId;
+    String razorpayOrderId;
 }

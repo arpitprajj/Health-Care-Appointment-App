@@ -20,21 +20,25 @@ public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID paymentId;
+    UUID paymentId;
 
-    private UUID appointmentId;
+    UUID appointmentId;
 
-    private BigDecimal amount;
+    BigDecimal amount;
 
-    @Enumerated(EnumType.STRING)
-    private PaymentMethod paymentMethod;
+    PaymentStatus paymentStatus;
 
-    @Enumerated(EnumType.STRING)
-    private PaymentStatus paymentStatus;
+    PaymentMethod paymentMethod;
 
-    private String transactionId;
+    String razorpayOrderId;
 
-    private LocalDateTime createdAt;
+    String razorpayPaymentId;
 
-    private LocalDateTime updatedAt;
+    String razorpaySignature;
+
+    String currency;
+
+    LocalDateTime createdAt;
+
+    LocalDateTime updatedAt;
 }

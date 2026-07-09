@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Healthcare Payment</title>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+</head>
+
+<body>
+
+<h2>Healthcare Payment Demo</h2>
+
+<label>Appointment Id</label>
+
+<input
+        id="appointmentId"
+        style="width:350px"
+/>
+
+<br><br>
+
+<button onclick="payNow()">
+
+    Pay Now
+
+</button>
+
+<script>
+
+    async function payNow() {
+
+        const appointmentId =
+            document
+                .getElementById("appointmentId")
+                .value;
+
+        const response =
+            await fetch(
+                "http://localhost:5008/api/payments/create-order",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        appointmentId: appointmentId,
+
+                        paymentMethod: "UPI"
+
+                    })
+                });
+
+        const order =
+            await response.json();
+
+        console.log(order);
+
+        openRazorpay(order);
+
+    }
+
+    function openRazorpay(order) {
+
+        const options = {
+
+            key: order.key,
+
+            amount: order.amount,
+
+            currency: order.currency,
+
+            name: "Healthcare Appointment",
+
+            description: "Doctor Consultation",
+
+            order_id: order.razorpayOrderId,
+
+            handler: async function (response) {
+
+                console.log(response);
+
+                await verifyPayment(
+                    response,
+                    order.paymentId,
+                    order.appointmentId
+                );
+
+            }
+
+        };
+
+        const razorpay =
+            new Razorpay(options);
+
+        razorpay.open();
+
+    }
+
+    async function verifyPayment(
+        razorpayResponse,
+        paymentId,
+        appointmentId
+    ) {
+
+        const response =
+            await fetch(
+                "http://localhost:5008/api/payments/verify",
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type":"application/json"
+
+                    },
+
+                    body: JSON.stringify({
+
+                        appointmentId: appointmentId,
+
+                        razorpayOrderId:
+                            razorpayResponse.razorpay_order_id,
+
+                        razorpayPaymentId:
+                            razorpayResponse.razorpay_payment_id,
+
+                        razorpaySignature:
+                            razorpayResponse.razorpay_signature
+
+                    })
+
+                });
+
+        const result =
+            await response.json();
+
+        console.log(result);
+
+        alert("Payment Successful");
+
+    }
+
+</script>
+
+</body>
+
+</html>
