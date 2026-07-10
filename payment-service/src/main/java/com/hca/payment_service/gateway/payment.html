@@ -18,7 +18,18 @@
         id="appointmentId"
         style="width:350px"
 />
+<br>
+<label>JWT Token</label>
 
+<br>
+
+<textarea
+        id="token"
+        rows="5"
+        cols="100">
+</textarea>
+
+<br><br>
 <br><br>
 
 <button onclick="payNow()">
@@ -36,15 +47,24 @@
                 .getElementById("appointmentId")
                 .value;
 
+        const token =
+    document
+        .getElementById("token")
+        .value;
+
         const response =
             await fetch(
                 "http://localhost:5008/api/payments/create-order",
                 {
                     method: "POST",
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                   headers:{
+
+                    "Content-Type":"application/json",
+
+                    "Authorization":"Bearer " + token
+
+                },
 
                     body: JSON.stringify({
 
@@ -60,11 +80,11 @@
 
         console.log(order);
 
-        openRazorpay(order);
+        openRazorpay(order,token);
 
     }
 
-    function openRazorpay(order) {
+    function openRazorpay(order,token) {
 
         const options = {
 
@@ -87,7 +107,7 @@
                 await verifyPayment(
                     response,
                     order.paymentId,
-                    order.appointmentId
+                    order.appointmentId,token
                 );
 
             }
@@ -104,7 +124,7 @@
     async function verifyPayment(
         razorpayResponse,
         paymentId,
-        appointmentId
+        appointmentId,token
     ) {
 
         const response =
@@ -116,9 +136,11 @@
 
                     headers: {
 
-                        "Content-Type":"application/json"
+    "Content-Type":"application/json",
 
-                    },
+    "Authorization":"Bearer " + token
+
+},
 
                     body: JSON.stringify({
 
