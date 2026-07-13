@@ -53,8 +53,6 @@ public class AppointmentServiceImpl implements AppointmentService{
                 slotClient.getSlot(
                         UUID.fromString(slotId));
 
-        // Optional but recommended
-       //
 
         if (slot.getStatus() != SlotStatus.AVAILABLE) {
             throw new RuntimeException(

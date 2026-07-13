@@ -1,0 +1,78 @@
+version: "3.9"
+
+services:
+
+  ####################################################
+  # MYSQL
+  ####################################################
+
+  mysql:
+    image: mysql:8.4
+    container_name: mysql
+
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - healthcare-network
+
+  ####################################################
+  # MONGODB
+  ####################################################
+
+
+
+  eureka-server:
+
+    image: healthcare/service-registry:1.0
+
+    container_name: eureka-server
+
+    restart: unless-stopped
+
+    ports:
+      - "8761:8761"
+
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - healthcare-network
+
+######################################################
+# NETWORK
+######################################################
+
+networks:
+
+  healthcare-network:
+
+######################################################
+# VOLUMES
+######################################################
+
+volumes:
+
+  mysql-data:
+
+  mongo-data:
+
+  kafka-data:

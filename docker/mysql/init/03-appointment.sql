@@ -1,1 +1,0 @@
-CREATE DATABASE appointment_db;

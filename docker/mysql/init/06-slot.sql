@@ -1,1 +1,0 @@
-CREATE DATABASE slot_db;
