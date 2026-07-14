@@ -4,6 +4,7 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
@@ -13,8 +14,9 @@ import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 @Configuration
 public class MongoConfig {
 
-    private static final String URI =
-            "mongodb://root:root@localhost:27017/health?authSource=admin";
+
+    @Value("${mongodb.uri:mongodb://root:root@localhost:27017/health?authSource=admin}")
+    private String URI;
 
     @Bean
     public MongoClient mongoClient() {
