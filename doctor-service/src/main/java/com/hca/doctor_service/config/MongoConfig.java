@@ -16,7 +16,7 @@ public class MongoConfig {
 
 
     @Value("${mongodb.uri:mongodb://root:root@localhost:27017/health?authSource=admin}")
-    private String URI;
+    private  String URI;
 
     @Bean
     public MongoClient mongoClient() {

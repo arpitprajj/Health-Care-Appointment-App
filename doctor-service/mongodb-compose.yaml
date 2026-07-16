@@ -24,3 +24,7 @@ services:
 
 volumes:
   mongodb_data:
+
+
+networks:
+  - healthcare-network
