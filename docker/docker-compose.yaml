@@ -117,7 +117,7 @@ services:
         condition: service_started
     environment:
       EUREKA_SERVER: http://eureka-server:8761/eureka
-      JWT_SECRET: your-jwt-secret
+      JWT_SECRET: b7f3a9c2d1e4f6a8b9c0d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3
     restart: unless-stopped
     networks: [healthcare-network]
 
@@ -134,7 +134,7 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: root
       EUREKA_SERVER: http://eureka-server:8761/eureka
-      JWT_SECRET: your-jwt-secret
+      JWT_SECRET: b7f3a9c2d1e4f6a8b9c0d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3
     restart: unless-stopped
     networks: [healthcare-network]
 
@@ -163,7 +163,7 @@ services:
       mongodb: {condition: service_healthy}
       eureka-server: {condition: service_started}
     environment:
-      MONGODB_URI: mongodb://root:root@mongodb:27017/doctor_db?authSource=admin
+      #MONGODB_URI: mongodb://root:root@mongodb:27017/doctor_db?authSource=admin
       EUREKA_SERVER: http://eureka-server:8761/eureka
     restart: unless-stopped
     networks: [healthcare-network]
@@ -215,8 +215,8 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: root
       EUREKA_SERVER: http://eureka-server:8761/eureka
-      RAZORPAY_KEY: your-test-key
-      RAZORPAY_SECRET: your-test-secret
+      RAZORPAY_KEY: rzp_test_TB6bfoxsqUvFGj
+      RAZORPAY_SECRET: jO25wtrElKdMSBqQ2qhGnycr
     restart: unless-stopped
     networks: [healthcare-network]
 
@@ -235,8 +235,8 @@ services:
       DB_PASSWORD: root
       EUREKA_SERVER: http://eureka-server:8761/eureka
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      MAIL_USERNAME: your-email@gmail.com
-      MAIL_PASSWORD: your-app-password
+      MAIL_USERNAME: developer.meets.hacker@gmail.com
+      MAIL_PASSWORD: lsjwgyebfamltfcu
     restart: unless-stopped
     networks: [healthcare-network]
 
