@@ -1,0 +1,20 @@
+services:
+  slot-service:
+    image: healthcare/slot-service:1.0
+    build: ./slot-service
+    container_name: slot-service
+    ports: [ "5002:5002" ]
+    depends_on:
+      mysql: { condition: service_healthy }
+      eureka-server: { condition: service_started }
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/slot_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+    restart: unless-stopped
+    networks: [ healthcare-network ]
+
+networks:
+  healthcare-network:
+    external: true

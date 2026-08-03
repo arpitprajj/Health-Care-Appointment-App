@@ -1,0 +1,24 @@
+services:
+  notification-service:
+    image: healthcare/notification-service:1.0
+    build: ./notification-service
+    container_name: notification-service
+    ports: [ "5009:5009" ]
+    depends_on:
+      mysql: { condition: service_healthy }
+      kafka: { condition: service_started }
+      eureka-server: { condition: service_started }
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/notification_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      EUREKA_SERVER: http://eureka-server:8761/eureka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MAIL_USERNAME: developer.meets.hacker@gmail.com
+      MAIL_PASSWORD: lsjwgyebfamltfcu
+    restart: unless-stopped
+    networks: [ healthcare-network ]
+
+networks:
+  healthcare-network:
+    external: true

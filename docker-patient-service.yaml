@@ -1,0 +1,20 @@
+services:
+  patient-service:
+    image: healthcare/patient-service:1.0
+    build: ./patient-service
+    container_name: patient-service
+    ports: [ "5003:5003" ]
+#    depends_on:
+#      mysql: { condition: service_healthy }
+#      eureka-server: { condition: service_started }
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/patient_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+    restart: unless-stopped
+    networks: [ healthcare-network ]
+
+networks:
+  healthcare-network:
+    external: true

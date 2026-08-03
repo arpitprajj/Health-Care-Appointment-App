@@ -1,0 +1,18 @@
+services:
+  doctor-service:
+    image: healthcare/doctor-service:1.0
+    build: ./doctor-service
+    container_name: doctor-service
+    ports: [ "5001:5001" ]
+#    depends_on:
+#      mongodb: { condition: service_healthy }
+#      eureka-server: { condition: service_started }
+    environment:
+      #MONGODB_URI: mongodb://root:root@mongodb:27017/doctor_db?authSource=admin
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+    restart: unless-stopped
+    networks: [ healthcare-network ]
+
+networks:
+  healthcare-network:
+    external: true

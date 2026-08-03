@@ -1,0 +1,13 @@
+services:
+  eureka-server:
+    image: healthcare/eureka-server:1.0
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    restart: unless-stopped
+    networks:
+      - healthcare-network
+
+networks:
+  healthcare-network:
+    external: true

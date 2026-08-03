@@ -1,0 +1,22 @@
+services:
+  appointment-service:
+    image: healthcare/appointment-service:1.0
+    build: ./appointment-service
+    container_name: appointment-service
+    ports: [ "5007:5007" ]
+    depends_on:
+      mysql: { condition: service_healthy }
+      kafka: { condition: service_started }
+      eureka-server: { condition: service_started }
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/appointment_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    restart: unless-stopped
+    networks: [ healthcare-network ]
+
+networks:
+  healthcare-network:
+    external: true
