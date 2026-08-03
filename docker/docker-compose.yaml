@@ -94,151 +94,151 @@ services:
   # =========================
   # EUREKA
   # =========================
-#  eureka-server:
-#    image: healthcare/eureka-server:1.0
-#    container_name: eureka-server
-#    ports:
-#      - "8761:8761"
-#    restart: unless-stopped
-#    networks:
-#      - healthcare-network
-#
-#  # =========================
-#  # API GATEWAY
-#  # =========================
-#  api-gateway:
-#    image: healthcare/api-gateway:1.0
-#    build: ./api-gateway
-#    container_name: api-gateway
-#    ports:
-#      - "5000:5000"
-#    depends_on:
-#      eureka-server:
-#        condition: service_started
-#    environment:
-#      EUREKA_SERVER: http://eureka-server:8761/eureka
-#      JWT_SECRET: b7f3a9c2d1e4f6a8b9c0d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3
-#    restart: unless-stopped
-#    networks: [healthcare-network]
-#
-#  auth-service:
-#    image: healthcare/auth-service:1.0
-#    build: ./auth-service
-#    container_name: auth-service
-#    ports: ["5006:5006"]
-#    depends_on:
-#      mysql: {condition: service_healthy}
-#      eureka-server: {condition: service_started}
-#    environment:
-#      DB_URL: jdbc:mysql://mysql:3306/auth_db
-#      DB_USERNAME: root
-#      DB_PASSWORD: root
-#      EUREKA_SERVER: http://eureka-server:8761/eureka
-#      JWT_SECRET: b7f3a9c2d1e4f6a8b9c0d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3
-#    restart: unless-stopped
-#    networks: [healthcare-network]
-#
-#  patient-service:
-#    image: healthcare/patient-service:1.0
-#    build: ./patient-service
-#    container_name: patient-service
-#    ports: ["5003:5003"]
-#    depends_on:
-#      mysql: {condition: service_healthy}
-#      eureka-server: {condition: service_started}
-#    environment:
-#      DB_URL: jdbc:mysql://mysql:3306/patient_db
-#      DB_USERNAME: root
-#      DB_PASSWORD: root
-#      EUREKA_SERVER: http://eureka-server:8761/eureka
-#    restart: unless-stopped
-#    networks: [healthcare-network]
-#
-#  doctor-service:
-#    image: healthcare/doctor-service:1.0
-#    build: ./doctor-service
-#    container_name: doctor-service
-#    ports: ["5001:5001"]
-#    depends_on:
-#      mongodb: {condition: service_healthy}
-#      eureka-server: {condition: service_started}
-#    environment:
-#      #MONGODB_URI: mongodb://root:root@mongodb:27017/doctor_db?authSource=admin
-#      EUREKA_SERVER: http://eureka-server:8761/eureka
-#    restart: unless-stopped
-#    networks: [healthcare-network]
-#
-#  slot-service:
-#    image: healthcare/slot-service:1.0
-#    build: ./slot-service
-#    container_name: slot-service
-#    ports: ["5002:5002"]
-#    depends_on:
-#      mysql: {condition: service_healthy}
-#      eureka-server: {condition: service_started}
-#    environment:
-#      DB_URL: jdbc:mysql://mysql:3306/slot_db
-#      DB_USERNAME: root
-#      DB_PASSWORD: root
-#      EUREKA_SERVER: http://eureka-server:8761/eureka
-#    restart: unless-stopped
-#    networks: [healthcare-network]
-#
-#  appointment-service:
-#    image: healthcare/appointment-service:1.0
-#    build: ./appointment-service
-#    container_name: appointment-service
-#    ports: ["5007:5007"]
-#    depends_on:
-#      mysql: {condition: service_healthy}
-#      kafka: {condition: service_started}
-#      eureka-server: {condition: service_started}
-#    environment:
-#      DB_URL: jdbc:mysql://mysql:3306/appointment_db
-#      DB_USERNAME: root
-#      DB_PASSWORD: root
-#      EUREKA_SERVER: http://eureka-server:8761/eureka
-#      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-#    restart: unless-stopped
-#    networks: [healthcare-network]
-#
-#  payment-service:
-#    image: healthcare/payment-service:1.0
-#    build: ./payment-service
-#    container_name: payment-service
-#    ports: ["5008:5008"]
-#    depends_on:
-#      mysql: {condition: service_healthy}
-#      eureka-server: {condition: service_started}
-#    environment:
-#      DB_URL: jdbc:mysql://mysql:3306/payment_db
-#      DB_USERNAME: root
-#      DB_PASSWORD: root
-#      EUREKA_SERVER: http://eureka-server:8761/eureka
-#      RAZORPAY_KEY: rzp_test_TB6bfoxsqUvFGj
-#      RAZORPAY_SECRET: jO25wtrElKdMSBqQ2qhGnycr
-#    restart: unless-stopped
-#    networks: [healthcare-network]
-#
-#  notification-service:
-#    image: healthcare/notification-service:1.0
-#    build: ./notification-service
-#    container_name: notification-service
-#    ports: ["5009:5009"]
-#    depends_on:
-#      mysql: {condition: service_healthy}
-#      kafka: {condition: service_started}
-#      eureka-server: {condition: service_started}
-#    environment:
-#      DB_URL: jdbc:mysql://mysql:3306/notification_db
-#      DB_USERNAME: root
-#      DB_PASSWORD: root
-#      EUREKA_SERVER: http://eureka-server:8761/eureka
-#      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-#      MAIL_USERNAME: developer.meets.hacker@gmail.com
-#      MAIL_PASSWORD: lsjwgyebfamltfcu
-#    restart: unless-stopped
-#    networks: [healthcare-network]
+  eureka-server:
+    image: healthcare/eureka-server:1.0
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    restart: unless-stopped
+    networks:
+      - healthcare-network
+
+  # =========================
+  # API GATEWAY
+  # =========================
+  api-gateway:
+    image: healthcare/api-gateway:1.0
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      eureka-server:
+        condition: service_started
+    environment:
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+      JWT_SECRET: b7f3a9c2d1e4f6a8b9c0d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3
+    restart: unless-stopped
+    networks: [healthcare-network]
+
+  auth-service:
+    image: healthcare/auth-service:1.0
+    build: ./auth-service
+    container_name: auth-service
+    ports: ["5006:5006"]
+    depends_on:
+      mysql: {condition: service_healthy}
+      eureka-server: {condition: service_started}
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/auth_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+      JWT_SECRET: b7f3a9c2d1e4f6a8b9c0d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3
+    restart: unless-stopped
+    networks: [healthcare-network]
+
+  patient-service:
+    image: healthcare/patient-service:1.0
+    build: ./patient-service
+    container_name: patient-service
+    ports: ["5003:5003"]
+    depends_on:
+      mysql: {condition: service_healthy}
+      eureka-server: {condition: service_started}
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/patient_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+    restart: unless-stopped
+    networks: [healthcare-network]
+
+  doctor-service:
+    image: healthcare/doctor-service:1.0
+    build: ./doctor-service
+    container_name: doctor-service
+    ports: ["5001:5001"]
+    depends_on:
+      mongodb: {condition: service_healthy}
+      eureka-server: {condition: service_started}
+    environment:
+      MONGODB_URI: mongodb://root:root@mongodb:27017/doctor_db?authSource=admin
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+    restart: unless-stopped
+    networks: [healthcare-network]
+
+  slot-service:
+    image: healthcare/slot-service:1.0
+    build: ./slot-service
+    container_name: slot-service
+    ports: ["5002:5002"]
+    depends_on:
+      mysql: {condition: service_healthy}
+      eureka-server: {condition: service_started}
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/slot_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+    restart: unless-stopped
+    networks: [healthcare-network]
+
+  appointment-service:
+    image: healthcare/appointment-service:1.0
+    build: ./appointment-service
+    container_name: appointment-service
+    ports: ["5007:5007"]
+    depends_on:
+      mysql: {condition: service_healthy}
+      kafka: {condition: service_started}
+      eureka-server: {condition: service_started}
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/appointment_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    restart: unless-stopped
+    networks: [healthcare-network]
+
+  payment-service:
+    image: healthcare/payment-service:1.0
+    build: ./payment-service
+    container_name: payment-service
+    ports: ["5008:5008"]
+    depends_on:
+      mysql: {condition: service_healthy}
+      eureka-server: {condition: service_started}
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/payment_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+      RAZORPAY_KEY: rzp_test_TB6bfoxsqUvFGj
+      RAZORPAY_SECRET: jO25wtrElKdMSBqQ2qhGnycr
+    restart: unless-stopped
+    networks: [healthcare-network]
+
+  notification-service:
+    image: healthcare/notification-service:1.0
+    build: ./notification-service
+    container_name: notification-service
+    ports: ["5009:5009"]
+    depends_on:
+      mysql: {condition: service_healthy}
+      kafka: {condition: service_started}
+      eureka-server: {condition: service_started}
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/notification_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MAIL_USERNAME: developer.meets.hacker@gmail.com
+      MAIL_PASSWORD: lsjwgyebfamltfcu
+    restart: unless-stopped
+    networks: [healthcare-network]
 
 networks:
   healthcare-network:
