@@ -5,6 +5,7 @@ import com.hca.payment_service.dto.*;
 import com.hca.payment_service.entity.Payment;
 import com.hca.payment_service.enums.AppointmentStatus;
 import com.hca.payment_service.enums.PaymentStatus;
+import com.hca.payment_service.exception.PaymentException;
 import com.hca.payment_service.feign.AppointmentClient;
 import com.hca.payment_service.repository.PaymentRepository;
 import com.hca.payment_service.service.PaymentService;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -137,17 +139,19 @@ public class PaymentServiceImpl implements PaymentService {
         if (appointment.getPaymentStatus()
                 == PaymentStatus.SUCCESS) {
 
-            throw new RuntimeException(
+            throw new PaymentException(
                     "Payment already completed.");
         }
 
-        repository.findByAppointmentId(
-                        request.getAppointmentId())
-                .ifPresent(payment -> {
+        Optional<Payment>existPayment=repository.findTopByAppointmentIdOrderByCreatedAtDesc(
+                        request.getAppointmentId());
+        if(existPayment.isPresent()){
+            Payment payment=existPayment.get();
+            if(payment.getPaymentStatus()==PaymentStatus.SUCCESS ){
+                throw new PaymentException("Payment already completed");
+            }
+        }
 
-                    throw new RuntimeException(
-                            "Order already exists.");
-                });
 
         Order order =
                 razorpayService.createOrder(
@@ -248,7 +252,7 @@ public class PaymentServiceImpl implements PaymentService {
 
             repository.save(payment);
 
-            throw new RuntimeException(
+            throw new PaymentException(
                     "Payment verification failed.");
         }
 

@@ -14,4 +14,6 @@ public interface PaymentRepository
     Optional<Payment> findByAppointmentId(
             UUID appointmentId);
 
+    Optional<Payment> findTopByAppointmentIdOrderByCreatedAtDesc(UUID appointmentId);
+
 }
