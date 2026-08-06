@@ -131,10 +131,15 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public CreateOrderResponse createOrder(
             CreateOrderRequest request) throws RazorpayException {
-
-        AppointmentResponse appointment =
-                appointmentClient.getAppointment(
-                        request.getAppointmentId());
+        AppointmentResponse appointment;
+       try {
+           appointment=
+                   appointmentClient.getAppointment(
+                           request.getAppointmentId());
+       }
+       catch (FeignException ex){
+           throw new PaymentException("There is something issue in appointment service "+ex.getMessage());
+       }
 
         if (appointment.getPaymentStatus()
                 == PaymentStatus.SUCCESS) {
@@ -151,7 +156,6 @@ public class PaymentServiceImpl implements PaymentService {
                 throw new PaymentException("Payment already completed");
             }
         }
-
 
         Order order =
                 razorpayService.createOrder(
@@ -220,7 +224,7 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment =
                 repository.findById(paymentId)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new PaymentException(
                                         "Payment not found."));
 
         return PaymentMapper.toDto(payment);
@@ -231,14 +235,23 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse verifyPayment(
             VerifyPaymentRequest request) {
 
-        Payment payment =
-                repository
-                        .findByAppointmentId(
-                                request.getAppointmentId())
-                        .orElseThrow(
-                                () ->
-                                        new RuntimeException(
-                                                "Payment not found"));
+        Optional<Payment> paymentExist = repository
+                .findByRazorpayOrderId(request.getRazorpayOrderId());
+        if(paymentExist.isEmpty()) throw  new PaymentException("RazorPay Order not found");
+        Payment payment=paymentExist.get();
+
+        if (!payment.getAppointmentId().equals(request.getAppointmentId())) {
+            throw new PaymentException(
+                    "Appointment does not match payment.");
+        }
+//        Payment payment =
+//                repository
+//                        .findByAppointmentId(
+//                                request.getAppointmentId())
+//                        .orElseThrow(
+//                                () ->
+//                                        new RuntimeException(
+//                                                "Payment not found"));
 
         boolean verified =
                 razorpayService
@@ -269,9 +282,15 @@ public class PaymentServiceImpl implements PaymentService {
                 LocalDateTime.now());
 
         repository.save(payment);
+      try {
 
-        appointmentClient.confirmAppointment(
-                payment.getAppointmentId());
+
+          appointmentClient.confirmAppointment(
+                  payment.getAppointmentId());
+      }
+      catch (FeignException ex){
+          throw new PaymentException("There is something issue in appointment service "+ex.getMessage());
+      }
 
         return PaymentMapper.toDto(payment);
     }

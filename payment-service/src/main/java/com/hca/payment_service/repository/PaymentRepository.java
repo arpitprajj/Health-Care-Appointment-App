@@ -16,4 +16,5 @@ public interface PaymentRepository
 
     Optional<Payment> findTopByAppointmentIdOrderByCreatedAtDesc(UUID appointmentId);
 
+    Optional<Payment> findByRazorpayOrderId(String razorpayOrderId);
 }

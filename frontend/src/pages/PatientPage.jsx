@@ -95,7 +95,7 @@ export const PatientPage = () => {
       {patientData ? (
         <div className="profile-box">
           <h3>Active Patient Profile</h3>
-          <p><strong>Patient ID:</strong> <code>{patientData.userId}</code></p>
+          <p><strong>Patient ID:</strong> <code>{patientData.patientId}</code></p>
           <p><strong>Auth User ID:</strong> {patientData.userId}</p>
           <p><strong>Name:</strong> {patientData.fullName}</p>
           <p><strong>Contact:</strong> {patientData.emergencyContactNumber}</p>

@@ -3,7 +3,8 @@ import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { formatTime, formatDate } from "./DoctorPage";
 
-export const BookingPage = () => {
+// onBooked(appointmentId) is called by App.jsx to redirect to payment
+export const BookingPage = ({ onBooked }) => {
   const { isAuthenticated } = useAuth();
 
   const [doctors, setDoctors] = useState([]);
@@ -13,11 +14,12 @@ export const BookingPage = () => {
     new Date().toISOString().split("T")[0]
   );
   const [selectedStatus, setSelectedStatus] = useState("AVAILABLE");
-  
+
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
+  const [bookingInProgress, setBookingInProgress] = useState(null); // slotId being booked
 
   useEffect(() => {
     fetchDoctors();
@@ -53,12 +55,14 @@ export const BookingPage = () => {
       } else {
         res = await api.slot.getByDoctorAndStatus(selectedDoctor, selectedStatus);
       }
-      
+
       const slotsList = Array.isArray(res) ? res : [];
       setSlots(slotsList);
 
       if (slotsList.length === 0) {
-        setMessage(`No ${searchMode === "date" ? `slots on ${selectedDate}` : `${selectedStatus} slots`} found for Doctor ID ${selectedDoctor}.`);
+        setMessage(
+          `No ${searchMode === "date" ? `slots on ${selectedDate}` : `${selectedStatus} slots`} found for Doctor ID ${selectedDoctor}.`
+        );
       }
     } catch (err) {
       setError(err.message);
@@ -74,27 +78,35 @@ export const BookingPage = () => {
       return;
     }
 
-    setLoading(true);
+    setBookingInProgress(slotId);
     setMessage(null);
     setError(null);
     try {
+      // POST /api/appointments/slots/{slotId} → returns appointment with id
       const appointment = await api.appointment.create(slotId);
       const aptId = appointment.id || appointment.appointmentId;
-      setMessage(
-        `Appointment Booked Successfully! Appointment ID: ${aptId}`
-      );
-      // Refresh slots list
-      handleSearchSlots();
+
+      setMessage(`Appointment booked! Redirecting to Payment for Appointment ID: ${aptId}`);
+
+      // Give a short moment for the user to see the message, then redirect
+      setTimeout(() => {
+        if (onBooked) {
+          onBooked(aptId); // tells App.jsx to switch to payment tab with this appointmentId
+        }
+      }, 1200);
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      setBookingInProgress(null);
     }
   };
 
   return (
     <div className="card">
-      <h2>Search & Book Slots (`/api/slots/doctor/{`{doctorId}`}`, `/api/appointments/slots/{`{slotId}`}`)</h2>
+      <h2>Search & Book Slots</h2>
+      <p style={{ color: "#6b7280", marginBottom: "1rem", fontSize: "0.9rem" }}>
+        Find available slots, book one, and you'll be automatically redirected to the Payment page.
+      </p>
 
       {message && <div className="alert alert-success">{message}</div>}
       {error && <div className="alert alert-danger">{error}</div>}
@@ -166,29 +178,29 @@ export const BookingPage = () => {
       </form>
 
       <div style={{ marginTop: "30px" }}>
-        <h3>Available Slots ({slots.length})</h3>
+        <h3>Slots ({slots.length})</h3>
         {slots.length === 0 ? (
           <p style={{ marginTop: "10px" }}>
-            No slots to display. Make sure slots have been generated for Doctor ID <code>{selectedDoctor || "N/A"}</code> under the <strong>Doctor Management</strong> tab.
+            No slots to display. Make sure slots have been generated for Doctor ID{" "}
+            <code>{selectedDoctor || "N/A"}</code> under the{" "}
+            <strong>Doctor Management</strong> tab.
           </p>
         ) : (
           <div className="slots-grid">
             {slots.map((slot) => {
               const isAvailable = slot.status === "AVAILABLE";
-              const formattedDate = formatDate(slot.slotDate);
-              const formattedStart = formatTime(slot.startTime);
-              const formattedEnd = formatTime(slot.endTime);
+              const isBookingThis = bookingInProgress === slot.id;
 
               return (
                 <div
                   key={slot.id}
-                  className={`slot-card ${
-                    isAvailable ? "slot-available" : "slot-unavailable"
-                  }`}
+                  className={`slot-card ${isAvailable ? "slot-available" : "slot-unavailable"}`}
                 >
-                  <p><strong>Date:</strong> {formattedDate}</p>
+                  <p>
+                    <strong>Date:</strong> {formatDate(slot.slotDate)}
+                  </p>
                   <p className="slot-time">
-                    ⏱ <strong>{formattedStart} - {formattedEnd}</strong>
+                    ⏱ <strong>{formatTime(slot.startTime)} - {formatTime(slot.endTime)}</strong>
                   </p>
                   <p>
                     Status:{" "}
@@ -208,9 +220,9 @@ export const BookingPage = () => {
                     <button
                       className="btn-primary btn-sm"
                       onClick={() => handleBookSlot(slot.id)}
-                      disabled={loading}
+                      disabled={bookingInProgress !== null}
                     >
-                      Book Slot
+                      {isBookingThis ? "Booking..." : "Book & Pay →"}
                     </button>
                   )}
                 </div>

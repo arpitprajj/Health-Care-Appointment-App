@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { usePatient } from "../context/PatientContext";
 
 export const AppointmentsPage = () => {
-  const { isAuthenticated, userId, role } = useAuth();
+  const { isAuthenticated, role } = useAuth();
+  // patientId from PatientContext (fetched right after login)
+  const { patientId } = usePatient();
 
-  const [lookupId, setLookupId] = useState(userId || "");
+  const [lookupId, setLookupId] = useState("");
   const [lookupType, setLookupType] = useState("patient"); // 'patient' or 'doctor'
   const [appointments, setAppointments] = useState([]);
 
@@ -13,9 +16,19 @@ export const AppointmentsPage = () => {
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
 
+  // Auto-populate lookupId with patientId when it becomes available
+  useEffect(() => {
+    if (patientId && lookupType === "patient") {
+      setLookupId(patientId);
+    }
+  }, [patientId, lookupType]);
+
   const fetchAppointments = async (e) => {
     if (e) e.preventDefault();
-    if (!lookupId) return;
+    if (!lookupId) {
+      setError("Please enter a Patient ID or Doctor ID to fetch appointments.");
+      return;
+    }
 
     setLoading(true);
     setMessage(null);
@@ -27,7 +40,7 @@ export const AppointmentsPage = () => {
       } else {
         res = await api.appointment.getByDoctorId(lookupId);
       }
-      setAppointments(res || []);
+      setAppointments(Array.isArray(res) ? res : []);
     } catch (err) {
       setError(err.message);
       setAppointments([]);
@@ -55,6 +68,19 @@ export const AppointmentsPage = () => {
     <div className="card">
       <h2>Appointment History (`/api/appointments`)</h2>
 
+      {!isAuthenticated && (
+        <div className="alert alert-warning">
+          Please login on the <strong>Authentication</strong> tab to view appointments.
+        </div>
+      )}
+
+      {/* Show resolved patientId info */}
+      {patientId && (
+        <div className="alert alert-success" style={{ marginBottom: "1rem" }}>
+          Your Patient ID: <code><strong>{patientId}</strong></code> — loaded automatically.
+        </div>
+      )}
+
       {message && <div className="alert alert-success">{message}</div>}
       {error && <div className="alert alert-danger">{error}</div>}
 
@@ -63,7 +89,15 @@ export const AppointmentsPage = () => {
           <label>View History For</label>
           <select
             value={lookupType}
-            onChange={(e) => setLookupType(e.target.value)}
+            onChange={(e) => {
+              setLookupType(e.target.value);
+              // Auto-fill patientId when switching to patient mode
+              if (e.target.value === "patient" && patientId) {
+                setLookupId(patientId);
+              } else if (e.target.value === "doctor") {
+                setLookupId("");
+              }
+            }}
           >
             <option value="patient">Patient ID</option>
             <option value="doctor">Doctor ID</option>
@@ -71,13 +105,13 @@ export const AppointmentsPage = () => {
         </div>
 
         <div className="form-group">
-          <label>ID</label>
+          <label>{lookupType === "patient" ? "Patient ID" : "Doctor ID"}</label>
           <input
             type="text"
             required
             value={lookupId}
             onChange={(e) => setLookupId(e.target.value)}
-            placeholder="Enter Patient/Doctor ID"
+            placeholder={lookupType === "patient" ? "Patient UUID" : "Doctor ID"}
           />
         </div>
 
@@ -89,7 +123,7 @@ export const AppointmentsPage = () => {
       <div style={{ marginTop: "30px" }}>
         <h3>Appointment List</h3>
         {appointments.length === 0 ? (
-          <p>No appointments found.</p>
+          <p>No appointments found. Click <strong>Fetch Appointments</strong> to load.</p>
         ) : (
           <table className="table">
             <thead>

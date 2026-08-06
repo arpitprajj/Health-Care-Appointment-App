@@ -1,15 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { api } from "../services/api";
-import { useAuth } from "../context/AuthContext";
 
-export const PaymentPage = () => {
-  const { isAuthenticated, token } = useAuth();
-
-  const [appointmentId, setAppointmentId] = useState("");
+// appointmentId prop is passed in by App.jsx when redirected from BookingPage
+export const PaymentPage = ({ appointmentId: initialAppointmentId }) => {
+  const [appointmentId, setAppointmentId] = useState(initialAppointmentId || "");
   const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
+
+  // If parent passes a new appointmentId (after redirect from booking), update it
+  useEffect(() => {
+    if (initialAppointmentId) {
+      setAppointmentId(initialAppointmentId);
+      setMessage(null);
+      setError(null);
+    }
+  }, [initialAppointmentId]);
 
   const handlePayNow = async (e) => {
     e.preventDefault();
@@ -23,16 +30,16 @@ export const PaymentPage = () => {
     setError(null);
 
     try {
-      // 1. Call Payment Service to create Razorpay Order
+      // 1. Create Razorpay order
       const order = await api.payment.createOrder(appointmentId, paymentMethod);
 
       if (!order || !order.razorpayOrderId) {
-        throw new Error("Failed to create order from Payment Service.");
+        throw new Error("Failed to create payment order. Check that the appointment exists and is in CREATED status.");
       }
 
-      setMessage("Razorpay Order Created! Opening Checkout window...");
+      setMessage("Razorpay Order created! Opening checkout window...");
 
-      // 2. Open Razorpay Checkout standard popup if Razorpay SDK is loaded
+      // 2. Open Razorpay Checkout modal
       if (window.Razorpay) {
         const options = {
           key: order.key,
@@ -43,14 +50,14 @@ export const PaymentPage = () => {
           order_id: order.razorpayOrderId,
           handler: async function (response) {
             try {
-              // 3. Verify Payment
-              const verifyRes = await api.payment.verify({
+              // 3. Verify payment with backend
+              await api.payment.verify({
                 appointmentId: order.appointmentId || appointmentId,
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
               });
-              setMessage("Payment Verified Successfully! Appointment Confirmed.");
+              setMessage("✅ Payment Verified! Appointment is now CONFIRMED.");
             } catch (err) {
               setError("Payment verification failed: " + err.message);
             }
@@ -68,7 +75,7 @@ export const PaymentPage = () => {
         const rzp = new window.Razorpay(options);
         rzp.open();
       } else {
-        setError("Razorpay SDK not loaded in browser. Check index.html script tag.");
+        setError("Razorpay SDK not loaded. Ensure the script tag is present in index.html.");
       }
     } catch (err) {
       setError(err.message);
@@ -80,6 +87,13 @@ export const PaymentPage = () => {
   return (
     <div className="card">
       <h2>Payment Service (`/api/payments`)</h2>
+
+      {/* Show banner when auto-navigated from booking */}
+      {initialAppointmentId && (
+        <div className="alert alert-success" style={{ marginBottom: "1rem" }}>
+          Appointment booked! Appointment ID <code><strong>{initialAppointmentId}</strong></code> has been auto-filled below. Select a payment method and click Pay Now.
+        </div>
+      )}
 
       {message && <div className="alert alert-success">{message}</div>}
       {error && <div className="alert alert-danger">{error}</div>}
@@ -94,8 +108,11 @@ export const PaymentPage = () => {
             required
             value={appointmentId}
             onChange={(e) => setAppointmentId(e.target.value)}
-            placeholder="Enter UUID of booked appointment"
+            placeholder="UUID of booked appointment"
           />
+          {initialAppointmentId && (
+            <small style={{ color: "#6b7280" }}>Auto-filled from your slot booking.</small>
+          )}
         </div>
 
         <div className="form-group">

@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { usePatient } from "../context/PatientContext";
 
 export const AuthPage = () => {
   const { login, isAuthenticated, role, userId, logout } = useAuth();
+  const { fetchAndStorePatient, patientId, clearPatient } = usePatient();
   const [mode, setMode] = useState("login"); // 'login' or 'register'
-  
+
   // Register state
   const [regForm, setRegForm] = useState({
     email: "",
@@ -34,6 +36,10 @@ export const AuthPage = () => {
       setMessage("Registration Successful!");
       if (res && res.token) {
         login(res);
+        // Fetch patient profile right after registering (if PATIENT role)
+        if (res.userId && regForm.role === "PATIENT") {
+          await fetchAndStorePatient(res.userId);
+        }
       }
     } catch (err) {
       setError(err.message);
@@ -52,12 +58,21 @@ export const AuthPage = () => {
       setMessage("Login Successful!");
       if (res && res.token) {
         login(res);
+        // Fetch patient profile immediately after login using userId from response
+        if (res.userId) {
+          await fetchAndStorePatient(res.userId);
+        }
       }
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    clearPatient();
   };
 
   return (
@@ -70,7 +85,10 @@ export const AuthPage = () => {
             You are logged in as <strong>{role}</strong> (User ID:{" "}
             <code>{userId}</code>).
           </p>
-          <button className="btn-secondary" onClick={logout}>
+          {patientId && (
+            <p>Patient ID: <code>{patientId}</code></p>
+          )}
+          <button className="btn-secondary" onClick={handleLogout}>
             Logout
           </button>
         </div>
