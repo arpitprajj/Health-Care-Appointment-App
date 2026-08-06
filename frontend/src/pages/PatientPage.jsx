@@ -38,6 +38,7 @@ export const PatientPage = () => {
           contactNumber: res.contactNumber || "9876543210",
           address: res.address || "123 Health Street, City",
         });
+        console.log(res)
       }
     } catch (err) {
       // Profile might not exist yet
@@ -55,6 +56,7 @@ export const PatientPage = () => {
         // Update existing patient
         const res = await api.patient.update(patientData.id, form);
         setPatientData(res);
+
         setMessage("Patient Profile Updated!");
       } else {
         // Create new patient profile
@@ -93,10 +95,10 @@ export const PatientPage = () => {
       {patientData ? (
         <div className="profile-box">
           <h3>Active Patient Profile</h3>
-          <p><strong>Patient ID:</strong> <code>{patientData.id}</code></p>
+          <p><strong>Patient ID:</strong> <code>{patientData.userId}</code></p>
           <p><strong>Auth User ID:</strong> {patientData.userId}</p>
-          <p><strong>Name:</strong> {patientData.name}</p>
-          <p><strong>Contact:</strong> {patientData.contactNumber}</p>
+          <p><strong>Name:</strong> {patientData.fullName}</p>
+          <p><strong>Contact:</strong> {patientData.emergencyContactNumber}</p>
           <p><strong>Blood Group:</strong> {patientData.bloodGroup}</p>
           <p><strong>Address:</strong> {patientData.address}</p>
         </div>
