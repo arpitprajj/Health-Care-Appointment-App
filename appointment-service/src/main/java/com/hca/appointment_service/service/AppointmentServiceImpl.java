@@ -5,6 +5,7 @@ import com.hca.appointment_service.entity.Appointment;
 import com.hca.appointment_service.enums.*;
 import com.hca.appointment_service.events.AppointmentConfirmedEvent;
 import com.hca.appointment_service.events.AppointmentReservedEvent;
+import com.hca.appointment_service.exceptions.AppointmentException;
 import com.hca.appointment_service.exceptions.AppointmentNotFoundException;
 import com.hca.appointment_service.feign.DoctorClient;
 import com.hca.appointment_service.feign.PatientClient;
@@ -42,7 +43,7 @@ public class AppointmentServiceImpl implements AppointmentService{
             String slotId) {
 
         if (!Role.PATIENT.name().equals(role)) {
-            throw new RuntimeException(
+            throw new AppointmentException(
                     "Only patients can book appointments");
         }
 
@@ -102,9 +103,9 @@ public class AppointmentServiceImpl implements AppointmentService{
 
             repository.save(appointment);
 
-            throw new RuntimeException(
-                    "Unable to reserve slot",
-                    ex);
+            throw new AppointmentException(
+                    "Unable to reserve slot" +
+                    ex.getMessage());
         }
         producer.publishReserved(
 
@@ -148,7 +149,7 @@ public class AppointmentServiceImpl implements AppointmentService{
         Appointment appointment = repository.findById(appointmentId)
                 .orElseThrow(() ->
                         new AppointmentNotFoundException(
-                                "Appointment not found"));
+                                "Appointment not found "+appointmentId));
 
         if (appointment.getAppointmentStatus() == AppointmentStatus.CONFIRMED) {
             return AppointmentMapper.toDto(appointment);
@@ -215,7 +216,7 @@ public class AppointmentServiceImpl implements AppointmentService{
                 );
                 log.info("====================================Appointment Confirmed "+appointment.getAppointmentId());
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new AppointmentException(e.getMessage());
             }
             return AppointmentMapper.toDto(appointment);
         }
@@ -231,8 +232,8 @@ public class AppointmentServiceImpl implements AppointmentService{
 
             repository.save(appointment);
 
-            throw new RuntimeException(
-                    "Unable to book slot after payment", ex);
+            throw new AppointmentException(
+                    "Unable to book slot after payment "+ex.getMessage());
         }
 
     }
@@ -244,7 +245,7 @@ public class AppointmentServiceImpl implements AppointmentService{
         Appointment appointment = repository.findById(appointmentId)
                 .orElseThrow(() ->
                         new AppointmentNotFoundException(
-                                "Appointment not found"));
+                                "Appointment not found "+appointmentId));
 
         if (appointment.getAppointmentStatus() == AppointmentStatus.CANCELLED) {
             return AppointmentMapper.toDto(appointment);

@@ -3,6 +3,7 @@ package com.hca.slot_service.service.impl;
 import com.hca.slot_service.dto.GenerateSlotsRequest;
 import com.hca.slot_service.dto.SlotResponse;
 import com.hca.slot_service.entity.DoctorSlot;
+import com.hca.slot_service.exception.SlotException;
 import com.hca.slot_service.exception.SlotNotFoundException;
 import com.hca.slot_service.repository.DoctorSlotRepository;
 import com.hca.slot_service.service.SlotService;
@@ -102,13 +103,13 @@ public class SlotServiceImpl implements SlotService {
                                         "Slot not found"));
         if (!appointmentId.equals(slot.getReservedForAppointmentId())) {
 
-            throw new RuntimeException(
-                    "Reservation does not belong to this appointment");
+            throw new SlotException(
+                    "Reservation does not belong to this appointment "+slot.getReservedForAppointmentId());
         }
 
         if (slot.getStatus() != SlotStatus.RESERVED) {
-            throw new RuntimeException(
-                    "Slot not reserved");
+            throw new SlotException(
+                    "Slot not reserved "+slot.getId());
         }
 
         slot.setStatus(SlotStatus.BOOKED);
@@ -124,8 +125,8 @@ public class SlotServiceImpl implements SlotService {
         DoctorSlot slot=repository.findByIdForUpdate(slotId).orElseThrow(()->new SlotNotFoundException("slot not found"));
         if (!appointmentId.equals(slot.getReservedForAppointmentId())) {
 
-            throw new RuntimeException(
-                    "Reservation does not belong to this appointment");
+            throw new SlotException(
+                    "Reservation does not belong to this appointment "+appointmentId);
         }
         slot.setStatus(SlotStatus.AVAILABLE);
 
