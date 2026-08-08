@@ -20,10 +20,10 @@ public class GlobalSlotExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(FeignException.class)
-    ResponseEntity<String>handleSlotException(SlotException ex){
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(FeignException.class)
+//    ResponseEntity<String>handleSlotException(SlotException ex){
+//        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+//    }
 
 
 }
