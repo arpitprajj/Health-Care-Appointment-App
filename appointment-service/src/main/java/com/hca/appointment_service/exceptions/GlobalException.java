@@ -17,4 +17,19 @@ public class GlobalException {
     ResponseEntity<String> appointmentExceptionHandler(AppointmentException ex){
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(PatientServiceUnavailableException.class)
+    ResponseEntity<String>patientServiceHandler(PatientServiceUnavailableException ex){
+        return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(SlotServiceUnavailableException.class)
+    ResponseEntity<String>slotServiceHandler(SlotServiceUnavailableException ex){
+        return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DoctorServiceUnavailableException.class)
+    ResponseEntity<String>doctorServiceHandler(DoctorServiceUnavailableException ex){
+        return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+    }
 }

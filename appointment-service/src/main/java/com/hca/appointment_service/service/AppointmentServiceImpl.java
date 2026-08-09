@@ -12,6 +12,9 @@ import com.hca.appointment_service.feign.PatientClient;
 import com.hca.appointment_service.feign.SlotClient;
 import com.hca.appointment_service.producer.AppointmentEventProducer;
 import com.hca.appointment_service.repository.AppointmentRepository;
+import com.hca.appointment_service.service.client.DoctorClientService;
+import com.hca.appointment_service.service.client.PatientClientService;
+import com.hca.appointment_service.service.client.SlotClientService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +31,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class AppointmentServiceImpl implements AppointmentService{
-    private final PatientClient patientClient;
-    private final SlotClient slotClient;
-    private final DoctorClient doctorClient;
+    private final PatientClientService patientClientService;
+    private final SlotClientService slotClientService;
+    private final DoctorClientService doctorClientService;
     private final AppointmentRepository repository;
     private final AppointmentEventProducer producer;
 
@@ -48,10 +51,10 @@ public class AppointmentServiceImpl implements AppointmentService{
         }
 
         PatientResponse patient =
-                patientClient.getPatientByUserId(userId);
+                patientClientService.getPatientByUserId(userId);
 
         SlotResponse slot =
-                slotClient.getSlot(
+                slotClientService.getSlot(
                         UUID.fromString(slotId));
 
 
@@ -85,7 +88,7 @@ public class AppointmentServiceImpl implements AppointmentService{
 
         try {
 
-            slotClient.reserveSlot(
+            slotClientService.reserveSlot(
                     appointment.getSlotId(),
                     appointment.getPatientId(),
                     appointment.getAppointmentId());
@@ -155,7 +158,7 @@ public class AppointmentServiceImpl implements AppointmentService{
             return AppointmentMapper.toDto(appointment);
         }
         try {
-            slotClient.bookSlot(
+            slotClientService.bookSlot(
                     appointment.getSlotId(),
                     appointment.getAppointmentId());
 
@@ -178,8 +181,8 @@ public class AppointmentServiceImpl implements AppointmentService{
 
             repository.save(appointment);
             try {
-                DoctorResponse doctor = doctorClient.getDoctor(appointment.getDoctorId());
-                PatientResponse patient = patientClient.getPatientById(UUID.fromString(appointment.getPatientId()));
+                DoctorResponse doctor = doctorClientService.getDoctor(appointment.getDoctorId());
+                PatientResponse patient = patientClientService.getPatientById(UUID.fromString(appointment.getPatientId()));
                 producer.publishConfirmed(
 
                         AppointmentConfirmedEvent.builder()
@@ -258,7 +261,7 @@ public class AppointmentServiceImpl implements AppointmentService{
 
         } else {
 
-            slotClient.releaseSlot(
+            slotClientService.releaseSlot(
                     appointment.getSlotId(),
                     appointment.getAppointmentId());
         }
