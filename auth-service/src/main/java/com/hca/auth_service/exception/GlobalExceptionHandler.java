@@ -13,4 +13,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(DoctorServiceUnavailableException.class)
+    public ResponseEntity<String> handleDoctorNotFound(DoctorServiceUnavailableException ex){
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(PatientServiceUnavailableException.class)
+    public ResponseEntity<String> handlePatientNotFound(PatientServiceUnavailableException ex){
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+
 }

@@ -5,11 +5,13 @@ import com.hca.appointment_service.exceptions.SlotServiceUnavailableException;
 import com.hca.appointment_service.feign.SlotClient;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SlotClientService {
 
     private final SlotClient slotClient;
@@ -64,7 +66,9 @@ public class SlotClientService {
     private SlotResponse getSlotFallback(
             UUID slotId,
             Throwable throwable) {
-
+        log.error(
+                "CIRCUIT BREAKER FALLBACK - Slot Service unavailable. cause={}",
+                throwable.toString());
         throw new SlotServiceUnavailableException(
                 "Slot service is currently unavailable.");
     }
@@ -75,6 +79,9 @@ public class SlotClientService {
             String patientId,
             UUID appointmentId,
             Throwable throwable) {
+        log.error(
+                "CIRCUIT BREAKER FALLBACK - Slot Service unavailable. cause={}",
+                throwable.toString());
 
         throw new SlotServiceUnavailableException(
                 "Unable to reserve slot because "
@@ -86,6 +93,9 @@ public class SlotClientService {
             UUID slotId,
             UUID appointmentId,
             Throwable throwable) {
+        log.error(
+                "CIRCUIT BREAKER FALLBACK - Slot Service unavailable. cause={}",
+                throwable.toString());
 
         throw new SlotServiceUnavailableException(
                 "Unable to book slot because "
@@ -97,6 +107,9 @@ public class SlotClientService {
             UUID slotId,
             UUID appointmentId,
             Throwable throwable) {
+        log.error(
+                "CIRCUIT BREAKER FALLBACK - Slot Service unavailable. cause={}",
+                throwable.toString());
 
         throw new SlotServiceUnavailableException(
                 "Unable to release slot because "

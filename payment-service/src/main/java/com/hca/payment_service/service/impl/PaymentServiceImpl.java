@@ -8,6 +8,7 @@ import com.hca.payment_service.enums.PaymentStatus;
 import com.hca.payment_service.exception.PaymentException;
 import com.hca.payment_service.feign.AppointmentClient;
 import com.hca.payment_service.repository.PaymentRepository;
+import com.hca.payment_service.service.AppointmentClientService;
 import com.hca.payment_service.service.PaymentService;
 import com.hca.payment_service.service.RazorpayService;
 import com.hca.payment_service.util.FakePaymentGateway;
@@ -31,7 +32,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository repository;
 
-    private final AppointmentClient appointmentClient;
+    private final AppointmentClientService appointmentClientService;
 
     private final RazorpayService razorpayService;
 
@@ -134,7 +135,7 @@ public class PaymentServiceImpl implements PaymentService {
         AppointmentResponse appointment;
        try {
            appointment=
-                   appointmentClient.getAppointment(
+                   appointmentClientService.getAppointment(
                            request.getAppointmentId());
        }
        catch (FeignException ex){
@@ -285,7 +286,7 @@ public class PaymentServiceImpl implements PaymentService {
       try {
 
 
-          appointmentClient.confirmAppointment(
+          appointmentClientService.confirmAppointment(
                   payment.getAppointmentId());
       }
       catch (FeignException ex){

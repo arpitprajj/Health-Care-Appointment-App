@@ -10,6 +10,8 @@ import com.hca.auth_service.feignClient.DoctorClient;
 import com.hca.auth_service.feignClient.PatientClient;
 import com.hca.auth_service.repository.UserRepository;
 import com.hca.auth_service.service.AuthService;
+import com.hca.auth_service.service.client.DoctorClientService;
+import com.hca.auth_service.service.client.PatientClientService;
 import com.hca.auth_service.util.JwtUtil;
 import com.hca.auth_service.util.Role;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +36,8 @@ public class AuthServiceImpl
     private final AuthenticationManager authManager;
 
     private final JwtUtil jwtUtil;
-    private  final PatientClient patientClient;
-    private final DoctorClient doctorClient;
+    private  final PatientClientService patientClientService;
+    private final DoctorClientService doctorClientService;
 
     @Override
     public AuthResponse register(
@@ -69,7 +71,7 @@ public class AuthServiceImpl
             userRequest.setUserId(String.valueOf(user.getUserId()));
             userRequest.setEmail(user.getEmail());
             userRequest.setPhoneNumber(user.getPhoneNumber());
-            patientClient.createPatient(userRequest);
+            patientClientService.createPatient(userRequest);
 
         }
         else if(user.getRole()== Role.DOCTOR){
@@ -77,7 +79,7 @@ public class AuthServiceImpl
             userRequest.setUserId(String.valueOf(user.getUserId()));
             userRequest.setEmail(user.getEmail());
             userRequest.setPhoneNumber(user.getPhoneNumber());
-            doctorClient.createDoctor(userRequest);
+            doctorClientService.createDoctor(userRequest);
 
         }
 
