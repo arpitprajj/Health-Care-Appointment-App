@@ -5,11 +5,13 @@ import com.hca.appointment_service.exceptions.PatientServiceUnavailableException
 import com.hca.appointment_service.feign.PatientClient;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PatientClientService {
 
     private final PatientClient patientClient;
@@ -36,6 +38,9 @@ public class PatientClientService {
     private PatientResponse getPatientByUserIdFallback(
             String userId,
             Throwable throwable) {
+        log.error(
+                "CIRCUIT BREAKER FALLBACK - Patient Service unavailable. cause={}",
+                throwable.toString());
 
         throw new PatientServiceUnavailableException(
                 "Patient service is currently unavailable. "
@@ -46,6 +51,9 @@ public class PatientClientService {
     private PatientResponse getPatientByIdFallback(
             UUID patientId,
             Throwable throwable) {
+        log.error(
+                "CIRCUIT BREAKER FALLBACK - Pateint Service unavailable. cause={}",
+                throwable.toString());
 
         throw new PatientServiceUnavailableException(
                 "Patient service is currently unavailable. "
