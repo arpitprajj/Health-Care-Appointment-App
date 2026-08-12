@@ -10,6 +10,7 @@ import com.hca.slot_service.service.SlotService;
 import com.hca.slot_service.utility.Mapper;
 import com.hca.slot_service.utility.SlotStatus;
 import com.hca.slot_service.utility.SlotTemplate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class SlotServiceImpl implements SlotService {
     @Autowired
     private DoctorSlotRepository repository;
@@ -48,6 +50,7 @@ public class SlotServiceImpl implements SlotService {
                                 .build();
 
                 repository.save(doctorSlot);
+                log.info("Slots generated for Doctor "+request.getDoctorId());
             }
 
             date = date.plusDays(1);
@@ -88,6 +91,7 @@ public class SlotServiceImpl implements SlotService {
                 LocalDateTime.now().plusMinutes(5));
         slot.setReservedForAppointmentId(appointmentId);
         repository.save(slot);
+        log.info("slot reserved by "+patientId+" "+slotId);
 
         return mapper.map(slot);
     }
@@ -115,6 +119,7 @@ public class SlotServiceImpl implements SlotService {
         slot.setStatus(SlotStatus.BOOKED);
 
         repository.save(slot);
+        log.info("Slot sucessfully booked for "+appointmentId);
 
         return mapper.map(slot);
     }
