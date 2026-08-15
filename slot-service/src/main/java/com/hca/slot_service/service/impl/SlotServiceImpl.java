@@ -129,8 +129,10 @@ public class SlotServiceImpl implements SlotService {
     public SlotResponse releaseSlot(UUID slotId,UUID appointmentId) {
         DoctorSlot slot=repository.findByIdForUpdate(slotId).orElseThrow(()->new SlotNotFoundException("slot not found"));
         if (!appointmentId.equals(slot.getReservedForAppointmentId())) {
+            log.error( "Reservation does not belong to this appointment "+appointmentId);
 
             throw new SlotException(
+
                     "Reservation does not belong to this appointment "+appointmentId);
         }
         slot.setStatus(SlotStatus.AVAILABLE);
