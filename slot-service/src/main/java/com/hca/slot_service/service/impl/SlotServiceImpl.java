@@ -140,6 +140,7 @@ public class SlotServiceImpl implements SlotService {
         slot.setReservedUntil(null);
         slot.setReservedForAppointmentId(null);
         repository.save(slot);
+        log.info("Reserving Slot "+slotId+" for this "+appointmentId);
         return mapper.map(slot);
     }
 
